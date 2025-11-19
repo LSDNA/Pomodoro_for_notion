@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Timer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="timer-container" class="work-mode">
+        <!-- Settings Area -->
+        <div id="settings">
+            <div class="setting-group">
+                <label for="mode-select">Mode:</label>
+                <select id="mode-select">
+                    <option value="25/5" selected>25 min work / 5 min break</option>
+                    <option value="50/10">50 min work / 10 min break</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label for="session-goal">Sessions:</label>
+                <input type="number" id="session-goal" value="4" min="1" max="10">
+            </div>
+        </div>
+
+        <!-- Timer Display -->
+        <div id="status">Work</div>
+        <div id="time-display">25:00</div>
+        <div id="session-display">Session 1 of 4</div>
+        
+        <!-- Controls -->
+        <div id="controls">
+            <button id="start-pause-btn">Start</button>
+            <button id="reset-btn">Reset</button>
+        </div>
+    </div>
+
+    <!-- Sound Alert -->
+    <audio id="alert-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-positive-notification-951.mp3" preload="auto"></audio>
+    
+    <script src="script.js"></script>
+</body>
+</html>
