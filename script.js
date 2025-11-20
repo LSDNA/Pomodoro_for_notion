@@ -59,7 +59,7 @@
             sessionGoal = savedState.sessionGoal;
             totalSeconds = savedState.totalSeconds;
             let wasRunning = savedState.isRunning;
-            isRunning = false; // Set to false initially, startTimer will set it to true if needed
+            isRunning = false; 
 
             if (wasRunning) {
                 const elapsedSeconds = Math.round((Date.now() - savedState.timestamp) / 1000);
@@ -100,11 +100,17 @@
         setupTimer();
     }
     
+    // HIER WIRD DIE FEHLENDE FUNKTION WIEDER EINGEFÜGT
+    function updateSessionDisplay() {
+        const currentSession = currentMode === 'work' ? sessionsCompleted + 1 : sessionsCompleted;
+        sessionDisplay.textContent = `Session ${Math.min(currentSession, sessionGoal)} of ${sessionGoal}`;
+    }
+
     function updateUIFromState() {
         statusDisplay.textContent = currentMode.charAt(0).toUpperCase() + currentMode.slice(1);
         timerContainer.className = currentMode === 'work' ? 'work-mode' : 'break-mode';
         updateDisplay();
-        updateSessionDisplay();
+        updateSessionDisplay(); // Dieser Aufruf funktioniert jetzt wieder
         
         const settingsDisabled = isRunning;
         modeSelect.disabled = settingsDisabled;
