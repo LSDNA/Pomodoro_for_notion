@@ -1,3 +1,5 @@
+console.log("--- POMODORO SCRIPT VERSION 3.0 RUNNING ---"); // DAS IST UNSERE BEWEIS-ZEILE
+
 (function() {
     // DOM Elements
     const timeDisplay = document.getElementById('time-display');
@@ -100,7 +102,6 @@
         setupTimer();
     }
     
-    // HIER WIRD DIE FEHLENDE FUNKTION WIEDER EINGEFÜGT
     function updateSessionDisplay() {
         const currentSession = currentMode === 'work' ? sessionsCompleted + 1 : sessionsCompleted;
         sessionDisplay.textContent = `Session ${Math.min(currentSession, sessionGoal)} of ${sessionGoal}`;
@@ -110,7 +111,7 @@
         statusDisplay.textContent = currentMode.charAt(0).toUpperCase() + currentMode.slice(1);
         timerContainer.className = currentMode === 'work' ? 'work-mode' : 'break-mode';
         updateDisplay();
-        updateSessionDisplay(); // Dieser Aufruf funktioniert jetzt wieder
+        updateSessionDisplay();
         
         const settingsDisabled = isRunning;
         modeSelect.disabled = settingsDisabled;
