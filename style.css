@@ -1,12 +1,10 @@
-/* --- CUSTOMIZE COLORS & FONTS HERE --- */
 :root {
     --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --work-color: #333;
     --break-color: #0066cc;
-    --bg-color: #f7f7f7; /* A very light grey for contrast */
+    --bg-color: #f7f7f7;
     --border-color: #e0e0e0;
 }
-/* ------------------------------------ */
 
 body {
     margin: 0;
@@ -28,11 +26,9 @@ body {
     transition: color 0.5s ease;
 }
 
-/* Color change based on mode */
 .work-mode { color: var(--work-color); }
 .break-mode { color: var(--break-color); }
 
-/* Settings */
 #settings {
     display: flex;
     justify-content: space-between;
@@ -49,7 +45,6 @@ body {
 }
 #session-goal { width: 40px; }
 
-/* Display */
 #status {
     font-size: 1.2rem;
     font-weight: 500;
@@ -67,7 +62,6 @@ body {
     margin-bottom: 20px;
 }
 
-/* Controls */
 #controls button {
     font-family: var(--font-family);
     font-size: 1rem;

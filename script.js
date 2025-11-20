@@ -23,35 +23,32 @@ let currentMode = 'work';
 let sessionsCompleted = 0;
 let sessionGoal = 4;
 
-// --- NEUE FUNKTIONEN ZUM SPEICHERN UND LADEN ---
+// --- FUNKTIONEN ZUM SPEICHERN UND LADEN ---
 
-// Speichert den aktuellen Zustand des Timers im localStorage
 function saveState() {
-    if (totalSeconds <= 0 && !isRunning) return; // Nichts speichern, wenn der Timer zurückgesetzt wurde
+    if (totalSeconds <= 0 && !isRunning && sessionsCompleted === 0) return;
 
     const state = {
         totalSeconds: totalSeconds,
         isRunning: isRunning,
         currentMode: currentMode,
         sessionsCompleted: sessionsCompleted,
-        sessionGoal: sessionGoal,
+        sessionGoal: parseInt(sessionGoalInput.value, 10),
         selectedMode: modeSelect.value,
-        timestamp: Date.now() // Wichtig, um die vergangene Zeit zu berechnen
+        timestamp: Date.now()
     };
     localStorage.setItem('pomodoroState', JSON.stringify(state));
 }
 
-// Lädt den Zustand aus dem localStorage
 function loadState() {
     const savedStateJSON = localStorage.getItem('pomodoroState');
     if (!savedStateJSON) {
-        resetTimer(); // Wenn kein Zustand gespeichert ist, normal starten
+        resetTimer(true); // Initialer Reset ohne Löschen des Speichers
         return;
     }
 
     const savedState = JSON.parse(savedStateJSON);
     
-    // UI-Elemente wiederherstellen
     modeSelect.value = savedState.selectedMode;
     sessionGoalInput.value = savedState.sessionGoal;
     
@@ -61,26 +58,32 @@ function loadState() {
     totalSeconds = savedState.totalSeconds;
     isRunning = savedState.isRunning;
 
-    // Vergangene Zeit berechnen, seit der Tab verlassen wurde
     if (isRunning) {
         const elapsedSeconds = Math.round((Date.now() - savedState.timestamp) / 1000);
         totalSeconds -= elapsedSeconds;
     }
 
-    // Timer fortsetzen oder UI aktualisieren
-    if (totalSeconds <= 0) {
-        switchMode(); // Wenn die Zeit abgelaufen ist, während man weg war
-    } else {
-        updateUIFromState();
-        if (isRunning) {
-            startTimer(true); // Timer fortsetzen, ohne die UI erneut zu sperren
-        }
+    if (totalSeconds < 0) totalSeconds = 0;
+
+    updateUIFromState();
+    
+    if (isRunning && totalSeconds > 0) {
+        startTimer(true);
+    } else if (isRunning && totalSeconds <= 0) {
+        clearInterval(timerInterval);
+        switchModeAndContinue();
+    }
+}
+
+function switchModeAndContinue() {
+    const shouldContinue = switchMode();
+    if (shouldContinue) {
+        startTimer();
     }
 }
 
 // --- ANGEPASSTE UND VORHANDENE FUNKTIONEN ---
 
-// Aktualisiert die gesamte Benutzeroberfläche basierend auf dem aktuellen Zustand
 function updateUIFromState() {
     statusDisplay.textContent = currentMode.charAt(0).toUpperCase() + currentMode.slice(1);
     timerContainer.className = currentMode === 'work' ? 'work-mode' : 'break-mode';
@@ -91,6 +94,11 @@ function updateUIFromState() {
         startPauseBtn.classList.add('running');
         modeSelect.disabled = true;
         sessionGoalInput.disabled = true;
+    } else {
+        startPauseBtn.textContent = 'Start';
+        startPauseBtn.classList.remove('running');
+        modeSelect.disabled = false;
+        sessionGoalInput.disabled = false;
     }
 }
 
@@ -107,7 +115,7 @@ function switchMode() {
         if (sessionsCompleted >= sessionGoal) {
             alert('All sessions complete! Great job!');
             resetTimer();
-            return;
+            return false;
         }
         currentMode = 'break';
         totalSeconds = pomodoroSettings[modeSelect.value].break * 60;
@@ -117,6 +125,7 @@ function switchMode() {
     }
     updateUIFromState();
     alertSound.play();
+    return true;
 }
 
 function countdown() {
@@ -125,42 +134,36 @@ function countdown() {
         updateDisplay();
     } else {
         clearInterval(timerInterval);
-        switchMode();
-        startTimer(); // Automatisch den nächsten Timer starten
+        switchModeAndContinue();
     }
 }
 
 function startTimer(resuming = false) {
     if (isRunning && !resuming) return;
     isRunning = true;
-    if (!resuming) { // Nur UI sperren, wenn es ein neuer Start ist
-        modeSelect.disabled = true;
-        sessionGoalInput.disabled = true;
-    }
-    startPauseBtn.textContent = 'Pause';
-    startPauseBtn.classList.add('running');
+    updateUIFromState();
     timerInterval = setInterval(countdown, 1000);
 }
 
 function pauseTimer() {
     if (!isRunning) return;
     isRunning = false;
-    startPauseBtn.textContent = 'Start';
-    startPauseBtn.classList.remove('running');
     clearInterval(timerInterval);
-    saveState(); // Zustand speichern, wenn pausiert wird
+    updateUIFromState();
+    saveState();
 }
 
-function resetTimer() {
-    pauseTimer();
-    localStorage.removeItem('pomodoroState'); // Wichtig: Gespeicherten Zustand löschen
+function resetTimer(isInitial = false) {
+    clearInterval(timerInterval);
+    isRunning = false;
+    if (!isInitial) {
+        localStorage.removeItem('pomodoroState');
+    }
+    
     sessionsCompleted = 0;
     currentMode = 'work';
-    sessionGoal = sessionGoalInput.value;
+    sessionGoal = parseInt(sessionGoalInput.value, 10);
     totalSeconds = pomodoroSettings[modeSelect.value].work * 60;
-    
-    modeSelect.disabled = false;
-    sessionGoalInput.disabled = false;
     
     updateUIFromState();
 }
@@ -180,11 +183,10 @@ startPauseBtn.addEventListener('click', () => {
     }
 });
 
-resetBtn.addEventListener('click', resetTimer);
-modeSelect.addEventListener('change', resetTimer);
-sessionGoalInput.addEventListener('change', () => { sessionGoal = sessionGoalInput.value; resetTimer(); });
+resetBtn.addEventListener('click', () => resetTimer(false));
+modeSelect.addEventListener('change', () => resetTimer(false));
+sessionGoalInput.addEventListener('change', () => resetTimer(false));
 
-// NEU: Zustand speichern, kurz bevor die Seite verlassen wird
 window.addEventListener('beforeunload', () => {
     if (isRunning) {
         saveState();
@@ -192,4 +194,4 @@ window.addEventListener('beforeunload', () => {
 });
 
 // --- Initialisierung ---
-loadState(); // Timer mit dem gespeicherten Zustand starten, falls vorhanden 
+loadState();
